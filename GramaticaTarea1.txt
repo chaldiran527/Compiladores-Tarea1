@@ -1,0 +1,77 @@
+cinta = [a-zA-Z_]
+cintapapel = [a-zA-Z_0-9]
+rpersona = {cinta} {cintapapel}*
+isantaclaus = [1-9]
+rsantaclaus = [0-9]
+rdedmoroz = -?{isantaclaus}{rsantaclaus}*
+rnikolaus = -?{isantaclaus}{rsantaclaus}* "." rsantaclaus+
+rsinterklass = ....
+rjultomtem = ...
+ 
+"int" 			return DEDMOROZ
+"float" 		return NIKOLAUS
+"string" 		return SINTERKLASS
+"char" 			return JULTOMTEM
+"bool" 			return PAPANOEL
+"<="   			return ENTREGA
+"|"				return FINREGALO
+“(“   			return ABRIRREGALO
+“)” 			return CERRARREGALO
+rpersona 		return PERSONA
+rdedmoroz 		return l_DEDMOROZ
+rnikolaus 		return l_NIKOLAUS
+rsinterklass 	return l_SINTERKLASS
+rjultomtem 		return l_JULTOMTEM
+"true"			return l_tPAPANOEL
+"false"			return l_fPAPANOEL
+
+
+tsantaclaus ::= 
+	DEDMOROZ |
+	NIKOLAUS |
+	SINTERKLASS |
+	JULTOMTEM |
+	PAPANOEL;
+
+tlsantaclaus ::=
+	l_DEDMOROZ |
+	l_NIKOLAUS |
+	l_SINTERKLASS |
+	l_JULTOMTEM |
+	l_tPAPANOEL |
+	l_fPAPANOEL;
+ 
+ayudanteDefFuncionNavidena ::= tsantaclaus PERSONA
+ 
+ayudsDefFuncNav :: = ayudanteDefFuncionNavidena
+	| ayudsDefFuncNav separaayuda ayudanteDefFuncionNavidena
+ 
+definirFuncionNavidena ::= "function" tsantaclaus PERSONA ABREREGALO CIERRAREGALO 
+	| tsantaclaus PERSONA ABREREGALO ayudsDefFuncNav CIERRAREGALO
+ 
+ 
+cuerpoFuncionNavidena ::= ABRELLAVE pNavidad  CIERRALLAVE
+ 
+funcionNavidena ::= definirFuncionNavidena cuerpoFuncionNavidena
+ 
+pfuncionNavidenaAux :: = funcionNavidena | funcionNavidenaAux funcionNavidena
+ 
+pnochebuena ::= pfuncionNavidenaAux
+
+creaRegalo ::= "local" tsantaclaus PERSONA FINREGALO ;
+creaEntregaRegalo ::= "local" tsantaclaus PERSONA ENTREGA tlsantaclaus FINREGALO ;
+ 
+lineasDeNavidad = creaRegalo | creaEntregaRegalo ;
+pAuxNavidad ::= 
+	lineasDeNavidad 
+	| pAuxNavidad lineasDeNavidad;
+ 
+pNavidad ::= pAuxNavidad ;
+
+navidad ::= pNavidad | pNochebuena
+
+//Arreglos 
+
+creaListaNavidena ::= "local" tsantaclaus PERSONA "[" NUMERO "]" FINREGALO;
+
+accedeListaNavidena
