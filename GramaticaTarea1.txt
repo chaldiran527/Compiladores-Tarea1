@@ -33,7 +33,8 @@ rt_float_santa = -? (0 | {rsantaclaus} {isantaclaus}*) ("." {isantaclaus}+)? (("
 "do"			return HACE
 "until"         return REVISA
 "switch"        return TRINEO
-"return"        return ENVIA
+"case"			return CUERDA
+"default"		return FRENO
 "break"			return CORTA
 "if"			return ELFO
 "else"			return DUENDE
@@ -69,9 +70,20 @@ rt_float_santa = -? (0 | {rsantaclaus} {isantaclaus}*) ("." {isantaclaus}+)? (("
 “]” 			return CIERRAEMPAQUE
 “{“   			return ABREEMPAQUE
 “}” 			return CIERRAEMPAQUE
+":"				return LUCES
 
 //relacionales
+"=="			return e_jinglebell
+"!="			return ne_tinseltoes
+"<"				return l_slinky
+">"				return g_merryberry
+"=>"			return ge_snowflake
+"=<"			return le_candycane
 
+//logicos
+"^"				return and_melchior
+"#"				return or_balthassar
+"!"				return not_gaspar
 
 //Identificador
 rpersona 		return PERSONA
@@ -125,33 +137,49 @@ codigoBolsaNavidena ::= ABREEMPAQUE lineasDeNavidad CIERRAEMPAQUE ;
 lineasDeNavidad ::= auxLineasDeNavidad | lineasDeNavidad auxLineasDeNavidad ;
 
 
-auxLineasDeNavidad ::= creaRegalo | pesebre |
-					 | RETORNAREGALO exprRegalo FINREGALO;
+auxLineasDeNavidad ::= creaRegalo FINREGALO| pesebre | 
+					 | RETORNAREGALO exprRegalo FINREGALO
+					 | CORTA FINREGALO ;
 
-exprRegalo ::=  tlsantaclaus | ;
+exprRegalo ::=  tlsantaclaus | creaRegalo | ABRECUENTO exprRegalo CIERRACUENTO 
+				| regaloprinBinario | regaloprinUnario | regalocompradoRelacional 
+				| regaloManual ;
+
+//Creacion, llamados y asignaciones de expresiones
+creaRegalo ::= "local" tsantaclaus PERSONA  | "local" tsantaclaus PERSONA ENTREGA exprRegalo
+				| PERSONA ENTREGA exprRegalo 
+				| "local" tsanataclaus PERSONA "[" l_pos_int_dedmoroz "]" 
+				| "local" tsanataclaus PERSONA "[" l_pos_int_dedmoroz "]" ENTREGA exprRegalo 
+				| PERSONA "[" l_pos_int_dedmoroz "]" ENTREGA exprRegalo 
+				| PERSONA | PERSONA "[" l_pos_int_dedmoroz "]";
 
 
-creaRegalo ::= "local" tsantaclaus PERSONA FINREGALO | "local" tsantaclaus PERSONA ENTREGA exprRegalo FINREGALO 
-				| PERSONA ENTREGA exprRegalo FINREGALO
-				| "local" tsanataclaus PERSONA "[" l_pos_int_dedmoroz "]" FINREGALO
-				| "local" tsanataclaus PERSONA "[" l_pos_int_dedmoroz "]" ENTREGA exprRegalo FINREGALO 
-				| PERSONA "[" l_pos_int_dedmoroz "]" ENTREGA exprRegalo FINREGALO;
+//Estructuras de control
+pesebre ::= while_esperarasanta | for_envuelve | do_hace | switch_trineo | if_elfo;
 
 // while () { }
-while_esperarasanta ::= ESPERARASANTA ABRECUENTO *regaloBooleano CIERRACUENTO ABREREGALO *Lineas CIERRAREGALO
+while_esperarasanta ::= ESPERARASANTA ABRECUENTO regalocompradoRelacional CIERRACUENTO ABREREGALO lineasDeNavidad CIERRAREGALO ;
 
-for_esperarasanta ::= ENVUELVE
+//for(int i = 0; i < 4; i++){}
+for_esperarasanta ::= ENVUELVE ABRECUENTO creaREGALO FINREGALO regalocompradoRelacionl FINREGALO regaloprinUnario CIERRACUENTO ABREREGALO lineasDeNavidad CIERRAREGALO ;
 
-do_hace ::= HACE
+//do{ }while()|
+do_hace ::= HACE ABREREGALO lineasDeNavidad CIERRAREGALO ESPERARASANTA ABRECUENTO exprRegalo FINREGALO ;
 
-switch_trineo ::= TRINEO 
+switch_trineo ::= TRINEO ABREREGALO exprRegalo CIERRAREGALO ABRECUENTO switch_trineo_codigo CIERRACUENTO ;
 
-//Todos los casos del if
-if_elfo ::= ELFO 
+switch_trineo_codigo ::= switch_trineo_caso | switch_trineo_codigo switch_trineo_caso ;
+
+//"case" return CUERDA  o   "default" return FRENO
+switch_trineo_caso ::= CUERDA exprRegalo LUCES lineasDeNavidad | FRENO LUCES lineasDeNavidad ;
+
+//Los casos del if, else y elif
+if_elfo ::= ELFO ABREREGALO exprRegalo CIERRAREGALO ABRECUENTO lineasDeNavidad CIERRACUENTO 
+		| DUENDE ABRECUENTO lineasDeNavidad CIERRACUENTO | HADA ABREREGALO exprRegalo CIERRAREGALO ABRECUENTO lineasDeNavidad CIERRACUENTO ;
 
 
 //Parametros de funciones (,,)
-paramBastoncitos ::= defParamBastoncito | paramBastoncitos ',' defParamBastoncito ;
+paramBastoncitos ::= defParamBastoncito | paramBastoncitos SEPARAREGALO defParamBastoncito ;
 
 defParamBastoncito ::= tsantaclaus PERSONA ;
 
@@ -163,10 +191,20 @@ regaloprinBinario ::= exprRegalo sum_dasher exprRegalo |
 					exprRegalo mod_comet exprRegalo |
 					exprRegalo pow_cupid exprRegalo ;
 
-//Operaciones aritmeticas unarias
-
-regaloprinUnario ::= QUIEN PERSONA | GRINCH PERSONA ; 
+//Operaciones aritmeticas unarias --a, ++a, a++, a--
+regaloprinUnario ::= QUIEN PERSONA | GRINCH PERSONA | PERSONA QUIEN | PERSONA GRINCH; 
 
 //Operaciones relacionales
+// a < b,  a < b, a == b, a != b, a => b, a =< b
+regalocompradoRelacional ::= exprRegalo l_slinky exprRegalo | 
+							exprRegalo g_merryberry exprRegalo |
+							exprRegalo e_jinglebell exprRegalo |
+							exprRegalo ne_tinseltoes exprRegalo |
+							exprRegalo ge_snowflake exprRegalo |
+							exprRegalo le_candycane exprRegalo ;
 
-regalocompradoRelacional ::= exprRegalo 
+//Operaciones logicas
+// a ^ b, a # b, !a 
+regaloManual ::= exprRegalo and_melchior exprRegalo |
+				exprRegalo or_balthassar exprRegalo |
+				exprRegalo not_gaspar exprRegalo ;
