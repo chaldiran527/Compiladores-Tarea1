@@ -1,77 +1,172 @@
+////////
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+WhiteSpace     = {LineTerminator} | [ \t\f]
 cinta = [a-zA-Z_]
 cintapapel = [a-zA-Z_0-9]
+
+Comment = {TraditionalComment} | {EndOfLineComment}
+
+TraditionalComment   = "/\_" [^\_] ~"\_/" | "/\_" "\_"+ "/"
+EndOfLineComment     = "@" {InputCharacter}* {LineTerminator}?
+
 rpersona = {cinta} {cintapapel}*
-isantaclaus = [1-9]
-rsantaclaus = [0-9]
-rdedmoroz = -?{isantaclaus}{rsantaclaus}*
-rnikolaus = -?{isantaclaus}{rsantaclaus}* "." rsantaclaus+
-rsinterklass = ....
-rjultomtem = ...
- 
-"int" 			return DEDMOROZ
-"float" 		return NIKOLAUS
-"string" 		return SINTERKLASS
-"char" 			return JULTOMTEM
-"bool" 			return PAPANOEL
-"<="   			return ENTREGA
-"|"				return FINREGALO
-“(“   			return ABRIRREGALO
-“)” 			return CERRARREGALO
-rpersona 		return PERSONA
-rdedmoroz 		return l_DEDMOROZ
-rnikolaus 		return l_NIKOLAUS
-rsinterklass 	return l_SINTERKLASS
-rjultomtem 		return l_JULTOMTEM
+rSeparador = \,
+rRegalo = \' {InputCharacter} \'
+
+isantaclaus = [0-9] //digito
+rsantaclaus = [1-9] //digito no cero
+rt_pos_int_sinterklass = [1-9]{isantaclaus}*
+rt_int_sinterklass =  0 | -?[1-9]{isantaclaus}* 
+rt_float_santa = -? (0 | {rsantaclaus} {isantaclaus}*) ("." {isantaclaus}+)? (("e" | "E") -? {isantaclaus}+)?
+
+//literales
+"int" 			return t_int_sinterklass
+"float" 		return t_float_santa
+"str" 		    return t_string_nicolas
+"char" 			return t_char_dedmoroz
+"define"		return DEFINEREGALO
+"void"			reutrun SINREGALO
+"boolean" 		return t_bool_colacho
+"for"			return ENVUELVE
+"while"			return ESPERARASANTA
+"do"			return HACE
+"until"         return REVISA
+"switch"        return TRINEO
+"return"        return ENVIA
+"break"			return CORTA
+"if"			return ELFO
+"else"			return DUENDE
+"elif"			return HADA
+"print"			return NARRA
+"read"			return ESCUCHA
+"return"		return RETORNAREGALO
+
+//Tipos de booleanos
 "true"			return l_tPAPANOEL
 "false"			return l_fPAPANOEL
 
+//Operadores aritmeticos binarios
 
+"+"    return sum_dasher;
+"-"    return res_dancer;
+"*"    return mul_prancer;
+"/"    return div_int_vixen;
+"//"   return div_float_blitzen;  
+"%"    return mod_comet;
+"^"    return pow_cupid;
+
+//Operadores aritmeticos unarios
+"--"			return QUIEN
+"++"			return GRINCH
+
+//asignacion y parentesis
+"<="   			return ENTREGA
+"|"				return FINREGALO
+“(“   			return ABRECUENTO
+“)” 			return CIERRACUENTO
+“[“   			return ABREEMPAQUE
+“]” 			return CIERRAEMPAQUE
+“{“   			return ABREEMPAQUE
+“}” 			return CIERRAEMPAQUE
+
+//relacionales
+
+
+//Identificador
+rpersona 		return PERSONA
+
+
+rt_int_sinterklass 			return l_int_dedmoroz
+rt_pos_int_sinterklass 		return l_pos_int_dedmoroz
+rt_float_santa 				return l_float_padrenavidadS
+rRegalo 					return l_MINIREGALO
+rSeparador					return SEPARAREGALO
+
+
+
+//Tipos
 tsantaclaus ::= 
-	DEDMOROZ |
-	NIKOLAUS |
-	SINTERKLASS |
-	JULTOMTEM |
-	PAPANOEL;
+	t_int_sinterklass |
+	t_float_santa |
+	t_string_nicolas |
+	t_bool_colacho |
+	t_char_dedmoroz;
 
+//Literales
 tlsantaclaus ::=
-	l_DEDMOROZ |
-	l_NIKOLAUS |
-	l_SINTERKLASS |
-	l_JULTOMTEM |
-	l_tPAPANOEL |
-	l_fPAPANOEL;
- 
-ayudanteDefFuncionNavidena ::= tsantaclaus PERSONA
- 
-ayudsDefFuncNav :: = ayudanteDefFuncionNavidena
-	| ayudsDefFuncNav separaayuda ayudanteDefFuncionNavidena
- 
-definirFuncionNavidena ::= "function" tsantaclaus PERSONA ABREREGALO CIERRAREGALO 
-	| tsantaclaus PERSONA ABREREGALO ayudsDefFuncNav CIERRAREGALO
- 
- 
-cuerpoFuncionNavidena ::= ABRELLAVE pNavidad  CIERRALLAVE
- 
-funcionNavidena ::= definirFuncionNavidena cuerpoFuncionNavidena
- 
-pfuncionNavidenaAux :: = funcionNavidena | funcionNavidenaAux funcionNavidena
- 
-pnochebuena ::= pfuncionNavidenaAux
+	l_int_dedmoroz |
+	l_float_santa |
+	l_string_nicolas |
+	l_MINIREGALO |    //char
+	l_tPAPANOEL | //true
+	l_fPAPANOEL;   //false
 
-creaRegalo ::= "local" tsantaclaus PERSONA FINREGALO ;
-creaEntregaRegalo ::= "local" tsantaclaus PERSONA ENTREGA tlsantaclaus FINREGALO ;
+
+
+//Inicial
+navidad ::= bolsaNavidena // 
+bolsaNavidena ::= bolsaNavidenaAux ;
+bolsaNavidenaAux ::= defBolsaNavidena | bolsaNavidenaAux defBolsaNavidena ;
+
+
  
-lineasDeNavidad = creaRegalo | creaEntregaRegalo ;
-pAuxNavidad ::= 
-	lineasDeNavidad 
-	| pAuxNavidad lineasDeNavidad;
- 
-pNavidad ::= pAuxNavidad ;
+//Se definen tipos de funciones: main, tipo sin parametros y tipo con parametros 
 
-navidad ::= pNavidad | pNochebuena
+defBolsaNavidena ::= bolsasNavidenas codigoBolsaNavidena ;
 
-//Arreglos 
+bolsasNavidenas ::= "function" tsantaclaus "main" ABRECUENTO CIERRACUENTO 
+					| "function" tsantaclaus PERSONA ABRECUENTO CIERRACUENTO  
+					| "function" tsantaclaus PERSONA ABRECUENTO paramBastoncitos CIERRACUENTO ; 
 
-creaListaNavidena ::= "local" tsantaclaus PERSONA "[" NUMERO "]" FINREGALO;
 
-accedeListaNavidena
+codigoBolsaNavidena ::= ABREEMPAQUE lineasDeNavidad CIERRAEMPAQUE ;
+
+lineasDeNavidad ::= auxLineasDeNavidad | lineasDeNavidad auxLineasDeNavidad ;
+
+
+auxLineasDeNavidad ::= creaRegalo | pesebre |
+					 | RETORNAREGALO exprRegalo FINREGALO;
+
+exprRegalo ::=  tlsantaclaus | ;
+
+
+creaRegalo ::= "local" tsantaclaus PERSONA FINREGALO | "local" tsantaclaus PERSONA ENTREGA exprRegalo FINREGALO 
+				| PERSONA ENTREGA exprRegalo FINREGALO
+				| "local" tsanataclaus PERSONA "[" l_pos_int_dedmoroz "]" FINREGALO
+				| "local" tsanataclaus PERSONA "[" l_pos_int_dedmoroz "]" ENTREGA exprRegalo FINREGALO 
+				| PERSONA "[" l_pos_int_dedmoroz "]" ENTREGA exprRegalo FINREGALO;
+
+// while () { }
+while_esperarasanta ::= ESPERARASANTA ABRECUENTO *regaloBooleano CIERRACUENTO ABREREGALO *Lineas CIERRAREGALO
+
+for_esperarasanta ::= ENVUELVE
+
+do_hace ::= HACE
+
+switch_trineo ::= TRINEO 
+
+//Todos los casos del if
+if_elfo ::= ELFO 
+
+
+//Parametros de funciones (,,)
+paramBastoncitos ::= defParamBastoncito | paramBastoncitos ',' defParamBastoncito ;
+
+defParamBastoncito ::= tsantaclaus PERSONA ;
+
+//Operaciones aritmeticas binarias
+regaloprinBinario ::= exprRegalo sum_dasher exprRegalo |
+					exprRegalo res_dancer exprRegalo |
+					exprRegalo div_int_vixen exprRegalo |
+					exprRegalo div_float_blitzen exprRegalo |
+					exprRegalo mod_comet exprRegalo |
+					exprRegalo pow_cupid exprRegalo ;
+
+//Operaciones aritmeticas unarias
+
+regaloprinUnario ::= QUIEN PERSONA | GRINCH PERSONA ; 
+
+//Operaciones relacionales
+
+regalocompradoRelacional ::= exprRegalo 
